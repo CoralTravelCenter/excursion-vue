@@ -6,5 +6,7 @@
     contents: [
         '/site/coral/markup/app.html',
         '/site/coral/markup/widget.html',
+        '/site/coral/markup/spacer.html',
+        '/site/coral/markup/widget-kamchatka.html',
     ]
 }
