@@ -1,44 +1,53 @@
 <script setup>
-import { computed } from "vue";
+import { computed, provide, reactive, ref } from "vue";
 
 import dayjs from "dayjs";
-import isSaneOfBefore from "dayjs/plugin/isSameOrBefore";
-dayjs.extend(isSaneOfBefore);
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+dayjs.extend(isSameOrBefore);
 
 import CalendarMonth from "./CalendarMonth.vue";
+import { dateSequence } from "../../lib/date-util";
 
 const props = defineProps({
-    modelValue: Array,
+    mode: String,
+    selection: Array,
     timeframe: Object
 });
+
+provide('calendar-mode', props.mode);
 
 const emit = defineEmits(['update:modelValue']);
 
 const monthsSequence = computed(() => {
-    const starting = props.timeframe.since;
-    const ending = props.timeframe.until;
-    let run = dayjs(starting);
-    return [...(function* () {
-        while (run.isSameOrBefore(ending, 'month')) {
-            yield run;
-            run = run.add(1, 'month');
-        }
-    })()];
+    return dateSequence([props.timeframe.since, props.timeframe.until], 1, 'month');
 });
 
-const clickedDates = [];
+let clickedDates = reactive([]);
+let hoveredDate = ref();
+
+const displayRangeSelected = computed(() => {
+    if (props.selection?.length === 2) {
+        return props.selection;
+    } else if (clickedDates.length === 1 && hoveredDate.value) {
+        return [clickedDates[0], hoveredDate.value].sort((a, b) => a.valueOf() - b.valueOf());
+    } else {
+        return null;
+    }
+});
+provide('display-range-selected', displayRangeSelected);
 
 function handleSelectDate(date) {
+    if (clickedDates.length === 2) clickedDates.splice(0);
     clickedDates.push(date);
-    emit('update:modelValue', clickedDates);
+    emit('update:selection', clickedDates.length === 2 ? clickedDates.sort((a, b) => a.valueOf() - b.valueOf()) : null);
 }
 
 function handleHoverDate(date) {
-
+    hoveredDate.value = date;
 }
 
 function handleSelectRange([start, end]) {
-
+    emit('update:selection', [start, end]);
 }
 
 function handleHoverRange([start, end]) {
@@ -60,9 +69,12 @@ function handleHoverRange([start, end]) {
 <style scoped lang="less">
 @import "../common/css/coral-colors-new";
 .calendar-band {
+    user-select: none;
+    overflow: auto;
     display: flex;
     gap: 1px;
     background-color: @coral-border-secondary;
     font-size: 14px;
+    scroll-snap-type: x mandatory;
 }
 </style>

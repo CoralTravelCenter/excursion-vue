@@ -1,9 +1,11 @@
 <script setup>
 
 import ppp from '../../lib/prototypes';
-import { computed } from "vue";
+import { computed, provide, ref } from "vue";
 import dayjs from "dayjs";
 import isBetween from 'dayjs/plugin/isBetween';
+import { groupBy } from "lodash";
+import CalendarBand from "./CalendarBand.vue";
 
 dayjs.extend(isBetween);
 
@@ -16,7 +18,7 @@ const props = defineProps({
 });
 
 const offersInPreferredDateRange = computed(() => {
-    if (props.preferDateRange.length === 2) {
+    if (props.preferDateRange?.length === 2) {
         const [startDate, endDate] = props.preferDateRange.map(d => dayjs(d));
         return props.excursion.offers.filter(offer => dayjs(offer.date).isBetween(startDate, endDate, 'day', '[]'));
     } else {
@@ -32,40 +34,59 @@ function offerHref(offer) {
     return `${ host }/hotels${ link.redirectionUrl }/?qp=${ link.queryParam }&p=2`;
 }
 
+const isOpen = ref(false);
+
+const showCalendar = computed(() => {
+    return isOpen.value && !hasSingleOfferInPreferredDateRange.value;
+});
+
+const offersByDate = computed(() => groupBy(props.excursion.offers, offer => offer.date));
+provide('offers-by-date', offersByDate);
+
+const excursionTimeframe = computed(() => {
+    const sorted_dates = props.excursion.offers.map(offer => offer.date).sort();
+    return { since: dayjs(sorted_dates.at(0)), until: dayjs(sorted_dates.at(-1)) }
+});
 
 </script>
 
 <template>
 <div class="excursion-card">
-    <div class="visual">
-        <div :style="{ backgroundImage: `url(${ excursion.bestOffer.visual })` }"></div>
-    </div>
-    <div class="info">
-        <div class="location">{{ excursion.parent.name }}</div>
-        <h2 class="name">{{ excursion.name }}</h2>
-        <div class="room">{{ excursion.bestOffer.room }}</div>
-        <div class="meal">{{ excursion.bestOffer.meal }}</div>
-    </div>
-    <div class="pricing">
-        <div class="price-info">
-            <div class="label">цена от:</div>
-            <div class="price-value">{{ (excursion.bestOffer.price.formatCurrency()) }}</div>
+    <div class="visual-info-pricing">
+        <div class="visual">
+            <div :style="{ backgroundImage: `url(${ excursion.bestOffer.visual })` }"></div>
         </div>
-        <div class="accommodation">
-            <span v-if="hasSingleOfferInPreferredDateRange">{{ dayjs(offersInPreferredDateRange[0].date).format('DD.MM.YYYY') }} &mdash; </span>
-            {{ excursion.nights }} {{ excursion.nights.asNights() }}
+        <div class="info">
+            <div class="location">{{ excursion.parent.name }}</div>
+            <h2 class="name">{{ excursion.name }}</h2>
+            <div class="room">{{ excursion.bestOffer.room }}</div>
+            <div class="meal">{{ excursion.bestOffer.meal }}</div>
         </div>
-        <div v-if="!!excursion.bestOffer.installment" class="installment">
-            <div class="description">
-                Доступно в рассрочку и кредит
-                от {{ excursion.bestOffer.installment.formatCurrency() }} в мес.
+        <div class="pricing">
+            <div class="price-info">
+                <div class="label">цена от:</div>
+                <div class="price-value">{{ (excursion.bestOffer.price.formatCurrency()) }}</div>
             </div>
+            <div class="accommodation">
+                <span v-if="hasSingleOfferInPreferredDateRange">{{ dayjs(offersInPreferredDateRange[0].date).format('DD.MM.YYYY') }} &mdash; </span>
+                {{ excursion.nights }} {{ excursion.nights.asNights() }}
+            </div>
+            <div v-if="!!excursion.bestOffer.installment" class="installment">
+                <div class="description">
+                    Доступно в рассрочку и кредит
+                    от {{ excursion.bestOffer.installment.formatCurrency() }} в мес.
+                </div>
+            </div>
+
+            <a v-if="hasSingleOfferInPreferredDateRange" :href="offerHref(offersInPreferredDateRange[0])" target="_blank" class="action">Выбрать тур</a>
+            <button v-else class="action" @click="isOpen = !isOpen">
+                <span>Выбрать дату</span>
+                <span class="disclose-mark" :style="{ transform: `rotate(${ isOpen ? 90 : -90 }deg)` }">&Lang;</span>
+            </button>
+
         </div>
-
-        <a v-if="hasSingleOfferInPreferredDateRange" :href="offerHref(offersInPreferredDateRange[0])" target="_blank" class="action">Выбрать тур</a>
-        <button v-else class="action">Выбрать дату</button>
-
     </div>
+    <CalendarBand v-if="showCalendar" :timeframe="excursionTimeframe" />
 </div>
 </template>
 
@@ -75,12 +96,17 @@ function offerHref(offer) {
 .excursion-card {
     width: 100%;
     display: flex;
-    border: 1px solid @coral-border-secondary;
+    flex-direction: column;
+    //border: 1px solid @coral-border-secondary;
+    box-shadow: 0 0 0 1px @coral-border-secondary;
     border-radius: (16/14em);
     background: white;
-    .push-inout-transition(@max-height: 20em);
+    .push-inout-transition(@max-height: 33em);
     &:nth-child(n+2) {
         margin-top: (24/14em);
+    }
+    .visual-info-pricing {
+        display: flex;
     }
     .visual {
         .proportional(16/10);
@@ -204,6 +230,12 @@ function offerHref(offer) {
             color: white;
             text-decoration: none!important;
             cursor: pointer;
+            .disclose-mark {
+                //transform: rotate(-90deg);
+                margin-left: 1em;
+                font-size: 1.2em;
+                .transit(transform, .25s);
+            }
         }
     }
 }

@@ -4,12 +4,12 @@ import { computed, provide, ref } from "vue";
 import ExcursionCard from "./ExcursionCard.vue";
 import dayjs from "dayjs";
 import locale_ru from 'dayjs/locale/ru';
-import isSaneOfAfter from 'dayjs/plugin/isSameOrAfter'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import CalendarBand from "./CalendarBand.vue";
 import { groupBy } from "lodash";
 
 dayjs.locale(locale_ru);
-dayjs.extend(isSaneOfAfter);
+dayjs.extend(isSameOrAfter);
 
 const props = defineProps({
     excursionList: {
@@ -29,8 +29,21 @@ const actualExcursions = computed(() => {
     });
 });
 
+const selectedTimeframe = ref(null);
+
 const excursionsMatchingCommonTimeframe = computed(() => {
-    return actualExcursions.value;
+    if (selectedTimeframe.value) {
+        return [...(function* () {
+            const [start, end] = selectedTimeframe.value;
+            for (const excursion of actualExcursions.value) {
+                const ex = JSON.parse(JSON.stringify(excursion));
+                ex.offers = ex.offers.filter(e => dayjs(e.date).isBetween(start, end, 'day', '[]'));
+                if (!!ex.offers.length) yield ex;
+            }
+        })()];
+    } else {
+        return actualExcursions.value;
+    }
 });
 
 const allOffers = computed(() => {
@@ -45,16 +58,16 @@ const wholeTimeframe = computed(() => {
     return { since: dayjs(sorted_dates.at(0)), until: dayjs(sorted_dates.at(-1)) }
 });
 
-const selectedTimeframe = ref([]);
 
 </script>
 
 <template>
 <div class="excursion-vue">
-    <CalendarBand v-model="selectedTimeframe" :timeframe="wholeTimeframe"/>
+    <CalendarBand mode="range" v-model:selection="selectedTimeframe" :timeframe="wholeTimeframe"/>
     <div class="excursion-list">
         <TransitionGroup name="push-inout">
             <ExcursionCard v-for="ex in excursionsMatchingCommonTimeframe"
+                           :prefer-date-range="selectedTimeframe"
                            :key="ex.locationId"
                            :excursion="ex" />
         </TransitionGroup>

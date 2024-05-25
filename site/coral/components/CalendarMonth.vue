@@ -1,27 +1,20 @@
 <script setup>
 
 import dayjs from "dayjs";
-import isSaneOfBefore from "dayjs/plugin/isSameOrBefore";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { computed } from "vue";
 import CalendarDate from "./CalendarDate.vue";
+import { dateSequence } from "../../lib/date-util";
 
-dayjs.extend(isSaneOfBefore);
+dayjs.extend(isSameOrBefore);
 
 const props = defineProps(['month']);
 const emit = defineEmits(['select-date', 'hover-date', 'select-range', 'hover-range']);
 
 const anchorDate = dayjs(props.month);
 
-const datesSequence = computed(() => {
-    const starting = anchorDate.startOf('month').startOf('week');
-    const ending = anchorDate.endOf('month').endOf('week');
-    let run = dayjs(starting);
-    return [...(function* () {
-        while (run.isSameOrBefore(ending, 'day')) {
-            yield run;
-            run = run.add(1, 'day');
-        }
-    })()];
+const datesOfMonth = computed(() => {
+    return dateSequence([anchorDate.startOf('month').startOf('week'), anchorDate.endOf('month').endOf('week')]);
 });
 
 function handleSelectDate(date) {
@@ -50,7 +43,7 @@ function handleHoverDate(date) {
             <span class="week-day-label">пт</span>
             <span class="week-day-label weekend">сб</span>
             <span class="week-day-label weekend">вс</span>
-            <CalendarDate v-for="date in datesSequence" :date="date"
+            <CalendarDate v-for="date in datesOfMonth" :date="date"
                           :disabled="!date.isSame(anchorDate,'month')"
                           @selectDate="handleSelectDate"
                           @hoverDate="handleHoverDate"/>
@@ -61,17 +54,25 @@ function handleHoverDate(date) {
 
 <style scoped lang="less">
 @import "../common/css/coral-colors-new";
+@import "../common/css/layout";
 .calendar-month {
     flex: 0 0 (100%/4);
     display: flex;
     flex-direction: column;
     gap: 1px;
+    scroll-snap-align: start;
     .name {
         text-align: center;
         background-color: white;
         line-height: 2;
         font-weight: 600;
         cursor: pointer;
+        .transit(color, .25s);
+        .transit(background-color, .25s);
+        &:hover {
+            background-color: @coral-primary;
+            color: white;
+        }
     }
     .dates-block {
         flex: 1;
