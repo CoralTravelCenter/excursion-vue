@@ -5,11 +5,16 @@ import { computed, inject } from "vue";
 const props = defineProps(['date','disabled']);
 const emit = defineEmits(['select-date', 'hover-date']);
 
+const calendarMode = inject('calendar-mode');
 const date = dayjs(props.date);
 
 const isWeekend = computed(() => [0, 6].includes(date.day()));
 
 const offersByDate = inject('offers-by-date');
+
+const offers = computed(() => {
+    return offersByDate.value[date.format('YYYY-MM-DD')];
+});
 
 const displayRangeSelected = inject('display-range-selected');
 const isSelected = computed(() => {
@@ -37,6 +42,12 @@ const isEndOfRange = computed(() => {
     }
 });
 
+function offerHref(offer) {
+    const host = location.hostname === 'localhost' ? '//www.coral.ru' : '';
+    const link = offer.link;
+    return `${ host }/hotels${ link.redirectionUrl }/?qp=${ link.queryParam }&p=2`;
+}
+
 </script>
 
 <template>
@@ -47,14 +58,15 @@ const isEndOfRange = computed(() => {
             selected: isSelected,
             available: !!offersByDate[date.format('YYYY-MM-DD')]
          }"
-         @click="emit('select-date', date)"
-         @mouseenter="emit('hover-date', date)">
-        <span class="date" :style="{
+         @click="calendarMode === 'range' && emit('select-date', date)"
+         @mouseenter="calendarMode === 'range' && emit('hover-date', date)">
+        <span v-if="calendarMode === 'range' || !offers?.length" class="date" :style="{
             borderTopLeftRadius: isStartOfRange ? '100px' : 0,
             borderBottomLeftRadius: isStartOfRange ? '100px' : 0,
             borderTopRightRadius: isEndOfRange ? '100px' : 0,
             borderBottomRightRadius: isEndOfRange ? '100px' : 0
          }">{{ date.format('D') }}</span>
+        <a v-else :href="offerHref(offers[0])" class="date" target="_blank">{{ date.format('D') }}</a>
         <span class="marker"></span>
     </div>
 </template>
@@ -71,10 +83,13 @@ const isEndOfRange = computed(() => {
             color: @coral-error;
         }
     }
-    &.available {
+    &.available:not(.disabled) {
         .marker {
             background-color: @coral-success-border;
         }
+    }
+    &:not(.available) {
+        pointer-events: v-bind("calendarMode === 'nav' ? 'none' : 'auto' ");
     }
     &.selected, &:hover {
         .date {
@@ -87,10 +102,19 @@ const isEndOfRange = computed(() => {
         display: inline-grid;
         place-content: center;
         background-color: white;
+        color: inherit;
         .transit(color, .25s);
         .transit(background-color, .25s);
     }
+    a.date {
+        background-color: @coral-success-bg-hover;
+        //box-shadow: inset 0 0 0 1px white;
+        border: 1px solid white;
+        border-left-width: 2px;
+        border-right-width: 2px;
+    }
     .marker {
+        visibility: v-bind("calendarMode === 'nav' ? 'hidden' : 'visible'");
         font-size: 62%;
         height: 2px;
     }

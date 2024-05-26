@@ -7,6 +7,7 @@ dayjs.extend(isSameOrBefore);
 
 import CalendarMonth from "./CalendarMonth.vue";
 import { dateSequence } from "../../lib/date-util";
+import { useScroll } from "@vueuse/core";
 
 const props = defineProps({
     mode: String,
@@ -54,27 +55,79 @@ function handleHoverRange([start, end]) {
 
 }
 
+const $el = ref();
+
+const { arrivedState, x: scrolledX } = useScroll($el);
+
 </script>
 
 <template>
-<div class="calendar-band">
+<div ref="$el" class="calendar-band">
     <CalendarMonth v-for="month in monthsSequence" :month="month"
+                   :key="month.valueOf()"
                    @selectDate="handleSelectDate"
                    @hoverDate="handleHoverDate"
                    @selectRange="handleSelectRange"
                    @hoverRange="handleHoverRange"/>
+    <Transition name="slidein-left">
+        <div v-if="!arrivedState.left" :style="{ transform: `translateX(${ scrolledX }px)` }" class="lefty-ctl">
+            <button>&LeftAngleBracket;&LeftAngleBracket;</button><button>&LeftAngleBracket;</button>
+        </div>
+    </Transition>
+    <Transition name="slidein-right">
+        <div v-if="!arrivedState.right" :style="{ transform: `translateX(${ scrolledX }px)` }" class="righty-ctl">
+            <button>&RightAngleBracket;</button><button>&RightAngleBracket;&RightAngleBracket;</button>
+        </div>
+    </Transition>
 </div>
 </template>
 
 <style scoped lang="less">
 @import "../common/css/coral-colors-new";
+@import "../common/css/layout";
 .calendar-band {
     user-select: none;
     overflow: auto;
+    position: relative;
     display: flex;
     gap: 1px;
     background-color: @coral-border-secondary;
     font-size: 14px;
     scroll-snap-type: x mandatory;
+    width: 25%;
+    &:has(>.calendar-month:nth-child(2)) {
+        width: 50%;
+    }
+    &:has(>.calendar-month:nth-child(3)) {
+        width: 75%;
+    }
+    &:has(>.calendar-month:nth-child(4)) {
+        width: 100%;
+    }
+    .lefty-ctl, .righty-ctl {
+        >button {
+            border: 0;
+            background-color: transparent;
+            line-height: 2;
+            width: 2em;
+            text-align: center;
+            cursor: pointer;
+            .transit(color);
+            .transit(background-color);
+            &:hover {
+                background-color: @coral-primary-bg;
+            }
+        }
+    }
+    .lefty-ctl {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .righty-ctl {
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
 }
 </style>

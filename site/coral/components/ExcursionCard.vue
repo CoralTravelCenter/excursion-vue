@@ -86,7 +86,9 @@ const excursionTimeframe = computed(() => {
 
         </div>
     </div>
-    <CalendarBand v-if="showCalendar" :timeframe="excursionTimeframe" />
+    <div class="calendar" v-if="showCalendar">
+        <CalendarBand mode="nav" :timeframe="excursionTimeframe" />
+    </div>
 </div>
 </template>
 
@@ -107,6 +109,14 @@ const excursionTimeframe = computed(() => {
     }
     .visual-info-pricing {
         display: flex;
+    }
+    .calendar {
+        display: flex;
+        justify-content: flex-end;
+        background-color: white;
+        >* {
+            //flex: 1;
+        }
     }
     .visual {
         .proportional(16/10);

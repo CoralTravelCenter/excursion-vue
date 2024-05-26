@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import CalendarDate from "./CalendarDate.vue";
 import { dateSequence } from "../../lib/date-util";
 
@@ -10,6 +10,8 @@ dayjs.extend(isSameOrBefore);
 
 const props = defineProps(['month']);
 const emit = defineEmits(['select-date', 'hover-date', 'select-range', 'hover-range']);
+
+const calendarMode = inject('calendar-mode');
 
 const anchorDate = dayjs(props.month);
 
@@ -56,12 +58,13 @@ function handleHoverDate(date) {
 @import "../common/css/coral-colors-new";
 @import "../common/css/layout";
 .calendar-month {
-    flex: 0 0 (100%/4);
+    flex: 1 0 (100%/4);
     display: flex;
     flex-direction: column;
     gap: 1px;
     scroll-snap-align: start;
     .name {
+        pointer-events: v-bind("calendarMode === 'nav' ? 'none' : 'auto' ");
         text-align: center;
         background-color: white;
         line-height: 2;
