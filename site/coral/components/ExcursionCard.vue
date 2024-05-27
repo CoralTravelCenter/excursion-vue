@@ -74,7 +74,7 @@ const excursionTimeframe = computed(() => {
             <div v-if="!!excursion.bestOffer.installment" class="installment">
                 <div class="description">
                     Доступно в рассрочку и кредит
-                    от {{ excursion.bestOffer.installment.formatCurrency() }} в мес.
+                    <span style="white-space: nowrap">от {{ excursion.bestOffer.installment.formatCurrency() }} в мес.</span>
                 </div>
             </div>
 
@@ -99,28 +99,39 @@ const excursionTimeframe = computed(() => {
     width: 100%;
     display: flex;
     flex-direction: column;
-    //border: 1px solid @coral-border-secondary;
     box-shadow: 0 0 0 1px @coral-border-secondary;
     border-radius: (16/14em);
     background: white;
+    font-size: inherit;
     .push-inout-transition(@max-height: 33em);
+    @media screen and (max-width: @strange-breakpoint) {
+        font-size: 1.2vw;
+    }
+    @media screen and (max-width: @narrow-breakpoint) {
+        max-height: unset!important;
+        font-size: 3vw;
+    }
     &:nth-child(n+2) {
         margin-top: (24/14em);
     }
     .visual-info-pricing {
         display: flex;
+        @media screen and (max-width: @narrow-breakpoint) {
+            flex-direction: column;
+        }
     }
     .calendar {
         display: flex;
         justify-content: flex-end;
         background-color: white;
-        >* {
-            //flex: 1;
-        }
     }
     .visual {
         .proportional(16/10);
         flex: 0 0 (.38 * .62 * 100%);
+        @media screen and (max-width: @narrow-breakpoint) {
+            .proportional(16/9);
+            flex: 1;
+        }
         >div {
             inset: .5em;
             background: center / cover no-repeat;
@@ -211,14 +222,18 @@ const excursionTimeframe = computed(() => {
         .installment {
             //margin-top: (8/14em);
             margin: auto 0;
-            padding: 1em;
+            padding: 0 1em;
+            height: 3.3em;
             display: flex;
             align-items: center;
-            font-size: 11px;
+            font-size: (11/14em);
             font-weight: 300;
-            line-height: 1.2;
+            line-height: 1.1;
             border: 1px solid @coral-border-secondary;
             border-radius: 1em;
+            @media screen and (max-width: @narrow-breakpoint) {
+                margin: 1em 0;
+            }
             &:before {
                 content: '';
                 width: 1.2em;

@@ -7,7 +7,7 @@ dayjs.extend(isSameOrBefore);
 
 import CalendarMonth from "./CalendarMonth.vue";
 import { dateSequence } from "../../lib/date-util";
-import { useScroll } from "@vueuse/core";
+import { onClickOutside, useScroll } from "@vueuse/core";
 
 const props = defineProps({
     mode: String,
@@ -56,8 +56,26 @@ function handleHoverRange([start, end]) {
 }
 
 const $el = ref();
+const { arrivedState, x: scrolledX } = useScroll($el, { behavior: 'smooth' });
 
-const { arrivedState, x: scrolledX } = useScroll($el);
+function scrollLeft() {
+    scrolledX.value -= $el.value.querySelector('.calendar-month').getBoundingClientRect().width;
+}
+function scrollRight() {
+    scrolledX.value += $el.value.querySelector('.calendar-month').getBoundingClientRect().width;
+}
+function scrollPageLeft() {
+    scrolledX.value -= $el.value.getBoundingClientRect().width;
+}
+function scrollPageRight() {
+    scrolledX.value += $el.value.getBoundingClientRect().width;
+}
+
+onClickOutside($el, () => {
+    if (clickedDates.length === 1) {
+        clickedDates.splice(0);
+    }
+});
 
 </script>
 
@@ -69,14 +87,16 @@ const { arrivedState, x: scrolledX } = useScroll($el);
                    @hoverDate="handleHoverDate"
                    @selectRange="handleSelectRange"
                    @hoverRange="handleHoverRange"/>
-    <Transition name="slidein-left">
+    <Transition name="fade">
         <div v-if="!arrivedState.left" :style="{ transform: `translateX(${ scrolledX }px)` }" class="lefty-ctl">
-            <button>&LeftAngleBracket;&LeftAngleBracket;</button><button>&LeftAngleBracket;</button>
+            <button @click="scrollPageLeft">&LeftAngleBracket;&LeftAngleBracket;</button>
+            <button @click="scrollLeft">&LeftAngleBracket;</button>
         </div>
     </Transition>
-    <Transition name="slidein-right">
+    <Transition name="fade">
         <div v-if="!arrivedState.right" :style="{ transform: `translateX(${ scrolledX }px)` }" class="righty-ctl">
-            <button>&RightAngleBracket;</button><button>&RightAngleBracket;&RightAngleBracket;</button>
+            <button @click="scrollRight">&RightAngleBracket;</button>
+            <button @click="scrollPageRight">&RightAngleBracket;&RightAngleBracket;</button>
         </div>
     </Transition>
 </div>
@@ -85,16 +105,35 @@ const { arrivedState, x: scrolledX } = useScroll($el);
 <style scoped lang="less">
 @import "../common/css/coral-colors-new";
 @import "../common/css/layout";
+
+.fade-inout() {
+    .transit(opacity, .3s);
+    &.fade-enter-from, &.fade-leave-to {
+        opacity: 0;
+    }
+
+}
+
 .calendar-band {
+    box-shadow: v-bind("mode === 'range' ? '0 0 0 1px rgba(0,0,0,.06)' : 'none' ");
     user-select: none;
     overflow: auto;
     position: relative;
     display: flex;
     gap: 1px;
     background-color: @coral-border-secondary;
-    font-size: 14px;
+    font-size: inherit;
     scroll-snap-type: x mandatory;
     width: 25%;
+    @media screen and (max-width: @strange-breakpoint) {
+        width: (100%/3);
+    }
+    @media screen and (max-width: @mobile-breakpoint) {
+        width: (100%/2);
+    }
+    @media screen and (max-width: @narrow-breakpoint) {
+        width: 100%!important;
+    }
     &:has(>.calendar-month:nth-child(2)) {
         width: 50%;
     }
@@ -104,10 +143,30 @@ const { arrivedState, x: scrolledX } = useScroll($el);
     &:has(>.calendar-month:nth-child(4)) {
         width: 100%;
     }
+    @media screen and (max-width: @strange-breakpoint) {
+        &:has(>.calendar-month:nth-child(2)) {
+            width: (2 * 100%/3);
+        }
+        &:has(>.calendar-month:nth-child(3)) {
+            width: 100%;
+        }
+    }
+    @media screen and (max-width: @mobile-breakpoint) {
+        font-size: 1.4vw;
+        &:has(>.calendar-month:nth-child(2)) {
+            width: 100%;
+        }
+    }
+    @media screen and (max-width: @narrow-breakpoint) {
+        font-size: 3vw;
+    }
     .lefty-ctl, .righty-ctl {
+        .fade-inout();
+        padding: 0 .5em;
         >button {
             border: 0;
             background-color: transparent;
+            font-size: inherit;
             line-height: 2;
             width: 2em;
             text-align: center;
@@ -115,7 +174,8 @@ const { arrivedState, x: scrolledX } = useScroll($el);
             .transit(color);
             .transit(background-color);
             &:hover {
-                background-color: @coral-primary-bg;
+                background-color: @coral-primary;
+                color: white;
             }
         }
     }

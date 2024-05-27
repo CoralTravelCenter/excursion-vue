@@ -63,6 +63,15 @@ function handleHoverDate(date) {
     flex-direction: column;
     gap: 1px;
     scroll-snap-align: start;
+    @media screen and (max-width: @strange-breakpoint) {
+        flex: 1 0 (100%/3);
+    }
+    @media screen and (max-width: @mobile-breakpoint) {
+        flex: 1 0 (100%/2);
+    }
+    @media screen and (max-width: @narrow-breakpoint) {
+        flex: 1 0 100%;
+    }
     .name {
         pointer-events: v-bind("calendarMode === 'nav' ? 'none' : 'auto' ");
         text-align: center;

@@ -75,7 +75,7 @@ const timeframeWording = computed(() => {
                                    : `в ${ prepositional[start.month()] } — ${ prepositional[end.month()] }`;
             } else {
                 if (isSameMonth) {
-                    return `${ start.date() } — ${ end.date() } ${ genitive[end.month()] }`;
+                    return `${ start.date() } — ${ end.date() } ${ genitive[end.month()] }`;
                 } else {
                     return `${ start.date() } ${ genitive[start.month()] } — ${ end.date() } ${ genitive[end.month()] }`;
                 }
@@ -90,8 +90,16 @@ const timeframeWording = computed(() => {
 
 <template>
 <div class="excursion-vue">
+    <h2>Календарь экскурсионных туров</h2>
     <CalendarBand mode="range" v-model:selection="selectedTimeframe" :timeframe="wholeTimeframe"/>
-    <h2>Экскурсионные туры {{ timeframeWording }}</h2>
+    <h2>
+        Экскурсионные туры {{ timeframeWording }}
+        <button v-if="selectedTimeframe" class="clear-selected-timeframe"
+                @click="selectedTimeframe = null">
+            <span style="font-size: 1.62em; margin-right: .3em;">&times;</span>
+            Сбросить фильтр по датам
+        </button>
+    </h2>
     <div class="excursion-list">
         <TransitionGroup name="push-inout">
             <ExcursionCard v-for="ex in excursionsMatchingCommonTimeframe"
@@ -105,7 +113,7 @@ const timeframeWording = computed(() => {
 
 <style scoped lang="less">
 @import "../common/css/layout";
-@import "../common/css/coral-colors";
+@import "../common/css/coral-colors-new";
 
 .excursion-vue {
     max-width: 100%;
@@ -113,6 +121,7 @@ const timeframeWording = computed(() => {
 
     margin-left: auto;
     margin-right: auto;
+    padding: 1.5em 0;
 
     .bbox();
     font-weight: normal;
@@ -122,7 +131,29 @@ const timeframeWording = computed(() => {
     gap: 1.5em;
 
     > h2 {
+        display: flex;
+        gap: .5em;
+        justify-content: center;
+        align-items: center;
         margin: auto;
+        @media screen and (max-width: @mobile-breakpoint) {
+            flex-direction: column;
+        }
+    }
+
+    .clear-selected-timeframe {
+        .interactive();
+        border: 0;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        line-height: 1;
+        background-color: @coral-primary;
+        color: white;
+        height: 2.3em;
+        padding: 0 1em;
+        border-radius: .5em;
+        cursor: pointer;
     }
 
 }

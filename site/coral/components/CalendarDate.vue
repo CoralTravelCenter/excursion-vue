@@ -112,6 +112,7 @@ function offerHref(offer) {
         border: 1px solid white;
         border-left-width: 2px;
         border-right-width: 2px;
+        text-decoration: none!important;
     }
     .marker {
         visibility: v-bind("calendarMode === 'nav' ? 'hidden' : 'visible'");
