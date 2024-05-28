@@ -72,7 +72,7 @@ defineExpose({ $el, isOpen });
             </div>
             <div class="accommodation">
                 <span v-if="hasSingleOfferInPreferredDateRange">{{ dayjs(offersInPreferredDateRange[0].date).format('DD.MM.YYYY') }} &mdash; </span>
-                {{ excursion.nights }} {{ excursion.nights.asNights() }}
+                {{ excursion.days }} {{ excursion.days.asDays() }} / {{ excursion.nights }} {{ excursion.nights.asNights() }}
             </div>
             <div v-if="!!excursion.bestOffer.installment" class="installment">
                 <div class="description">
