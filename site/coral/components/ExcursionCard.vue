@@ -48,10 +48,13 @@ const excursionTimeframe = computed(() => {
     return { since: dayjs(sorted_dates.at(0)), until: dayjs(sorted_dates.at(-1)) }
 });
 
+const $el = ref();
+defineExpose({ $el, isOpen });
+
 </script>
 
 <template>
-<div class="excursion-card">
+<div ref="$el" class="excursion-card" :data-location-id="excursion.locationId">
     <div class="visual-info-pricing">
         <div class="visual">
             <div :style="{ backgroundImage: `url(${ excursion.bestOffer.visual })` }"></div>

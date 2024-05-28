@@ -84,6 +84,12 @@ function offerHref(offer) {
         }
     }
     &.available:not(.disabled) {
+        .date {
+            background-color: @coral-success-bg-hover;
+            border: 1px solid white;
+            border-left-width: 2px;
+            border-right-width: 2px;
+        }
         .marker {
             background-color: @coral-success-border;
         }
@@ -93,8 +99,9 @@ function offerHref(offer) {
     }
     &.selected, &:hover {
         .date {
-            background-color: @coral-primary;
+            background-color: @coral-primary!important;
             color: white;
+            border-color: @coral-primary!important;
         }
     }
     .date {
@@ -105,6 +112,7 @@ function offerHref(offer) {
         color: inherit;
         .transit(color, .25s);
         .transit(background-color, .25s);
+        .transit(border-color, .25s);
     }
     a.date {
         background-color: @coral-success-bg-hover;
@@ -115,7 +123,8 @@ function offerHref(offer) {
         text-decoration: none!important;
     }
     .marker {
-        visibility: v-bind("calendarMode === 'nav' ? 'hidden' : 'visible'");
+        //visibility: v-bind("calendarMode === 'nav' ? 'hidden' : 'visible'");
+        visibility: hidden;
         font-size: 62%;
         height: 2px;
     }

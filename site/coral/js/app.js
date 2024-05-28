@@ -8,9 +8,17 @@ asap(async () => {
     const placeholders = document.querySelectorAll('[data-excursion-vue]');
     for (const place of placeholders) {
         try {
-            const excursionList = JSON.parse(place.textContent);
+            let parsed_setup = JSON.parse(place.textContent);
+            let excursionList, options;
+            if (Array.isArray(parsed_setup)) {
+                excursionList = parsed_setup;
+                options = {};
+            } else {
+                excursionList = parsed_setup.excursions;
+                options = parsed_setup.options;
+            }
             const app_root = place.parentElement;
-            createVueApp(app_root, excursionList);
+            createVueApp(app_root, excursionList, options);
         } catch (ex) {
             console.warn(ex);
         }
@@ -18,6 +26,6 @@ asap(async () => {
 
 });
 
-function createVueApp(app_root, excursionList) {
-    createApp(ExcursionVue, { excursionList }).mount(app_root);
+function createVueApp(app_root, excursionList, options) {
+    createApp(ExcursionVue, { excursionList, options }).mount(app_root);
 }
