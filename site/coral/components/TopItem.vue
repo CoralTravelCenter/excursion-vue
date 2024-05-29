@@ -61,6 +61,7 @@ const chooseExcursionByLocationId = inject('choose-excursion-by-location-id');
         font-size: 1.2em;
         line-height: 1.1;
         font-weight: 600;
+        overflow: hidden;
     }
     .accommodation {
         font-weight: 300;
