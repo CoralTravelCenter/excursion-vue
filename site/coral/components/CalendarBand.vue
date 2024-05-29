@@ -169,6 +169,7 @@ onClickOutside($el, () => {
             font-size: inherit;
             line-height: 2;
             width: 2em;
+            padding: 0;
             text-align: center;
             cursor: pointer;
             .transit(color);
