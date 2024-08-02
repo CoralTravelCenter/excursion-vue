@@ -1,0 +1,12 @@
+{
+    env: {
+        brand: 'sunmar-next',
+    },
+    contents: [
+        '/site/sunmar/markup/app.html',
+        '/site/sunmar/markup/heading.html',
+        '/site/sunmar/markup/widget-kazan.html',
+        '/site/sunmar/markup/spacer.html',
+        '/site/sunmar/markup/widget-kamchatka.html',
+    ]
+}
