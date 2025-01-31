@@ -121,9 +121,10 @@ const topContainer = ref();
 
 onMounted(() => {
     if (hasTopExcursions.value) {
+        const marked_anchor_el = document.querySelector('[data-widget="excursion"]');
         const container = $el.value.closest('[id^="section-column-"]');
-        if (container) {
-            const anchor_heading_el = [...container.querySelectorAll('h2,h3')].at(0);
+        if (marked_anchor_el || container) {
+            const anchor_heading_el = marked_anchor_el ?? [...container.querySelectorAll('h1,h2,h3')].at(0);
             topContainer.value = document.createElement('div');
             topContainer.value.style.width = '100%';
             anchor_heading_el.insertAdjacentElement('afterend', topContainer.value);
