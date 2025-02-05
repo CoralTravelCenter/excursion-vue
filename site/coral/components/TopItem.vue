@@ -56,7 +56,7 @@ const chooseExcursionByLocationId = inject('choose-excursion-by-location-id');
     .name {
         display: grid;
         place-content: center;
-        height: 2.2em;
+        height: 3.3em;
         margin: .7em auto .4em;
         font-size: 1.2em;
         line-height: 1.1;

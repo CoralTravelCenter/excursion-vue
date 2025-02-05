@@ -202,6 +202,8 @@ defineExpose({ $el, isOpen });
             .label {
                 font-size: (11/14em);
                 font-weight: 300;
+                color: inherit;
+                padding: unset;
             }
             .price-value {
                 color: @coral-primary;
